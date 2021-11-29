@@ -3,20 +3,26 @@ package com.contactmanagementsystem.project.controller;
 import com.contactmanagementsystem.project.dto.Response;
 import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
+import com.contactmanagementsystem.project.service.UploadService;
 import com.contactmanagementsystem.project.service.UserService;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/cms")
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private UploadService uploadService;
 
     @PostMapping("/addUser")
     public ResponseEntity<Response> addUser(@Valid @RequestBody User user) {
@@ -64,5 +70,10 @@ public class UserController {
                             .success(false)
                             .build(), HttpStatus.BAD_REQUEST);
         }
+    }
+    @SneakyThrows
+    @PostMapping("/upload")
+    public List<Map<String, String>> upload(@RequestParam("file") MultipartFile file)  {
+         return uploadService.upload(file);
     }
 }

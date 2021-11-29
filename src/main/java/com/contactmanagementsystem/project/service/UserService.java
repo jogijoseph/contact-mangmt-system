@@ -1,5 +1,6 @@
 package com.contactmanagementsystem.project.service;
 
+import com.contactmanagementsystem.project.exception.PhoneNoAlreadyPresent;
 import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CountryToPhonePrefix countryToPhonePrefix;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -22,7 +25,14 @@ public class UserService {
     Creates a user and insert into DB.
      */
     public User createUser(User user) {
-        return userRepository.save(user);
+        String code= countryToPhonePrefix.prefixCode(user.getCountryCode());
+        System.out.println(code);
+        user.setPh(code.concat(user.getPh()));
+        System.out.println(user.getPh());
+        if(userRepository.existsByPh(user.getPh()))
+            throw new PhoneNoAlreadyPresent("Phone Number already present");
+            else
+                return userRepository.save(user);
     }
 
     /*
@@ -58,3 +68,5 @@ public class UserService {
     }
 
 }
+
+

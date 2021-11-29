@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,6 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -45,7 +47,7 @@ class UserServiceTest {
 
         //then
         ArgumentCaptor<User> userArgumentCaptor = ArgumentCaptor.forClass(User.class);
-        Mockito.verify(userRepository, Mockito.times(1)).save(userArgumentCaptor.capture());
+        verify(userRepository, times(1)).save(userArgumentCaptor.capture());
         User value = userArgumentCaptor.getValue();
         Assertions.assertEquals(value, user);
     }
@@ -66,7 +68,7 @@ class UserServiceTest {
 
         //then
         ArgumentCaptor<List<User>> listUserArgumentCaptor = ArgumentCaptor.forClass(List.class);
-        Mockito.verify(userRepository, Mockito.times(1)).saveAll(listUserArgumentCaptor.capture());
+        verify(userRepository, times(1)).saveAll(listUserArgumentCaptor.capture());
         List<User> value = listUserArgumentCaptor.getValue();
         Assertions.assertEquals(value, expResult);
 
@@ -77,7 +79,7 @@ class UserServiceTest {
     void getUserById() {
         //given
         User userOne = User.builder().id(1).name("Mike").address("New York").ph("543218765").email("mike@test.com").build();
-        Mockito.when(userRepository.findById(ArgumentMatchers.eq(userOne.getId()))).thenReturn(Optional.of(userOne));
+        when(userRepository.findById(eq(userOne.getId()))).thenReturn(Optional.of(userOne));
 
         //when
         User user = userService.getUserById(userOne.getId());
@@ -92,17 +94,17 @@ class UserServiceTest {
         //when
         userService.getUsers();
         //then
-        Mockito.verify(userRepository, Mockito.times(1)).findAll();
+        verify(userRepository, times(1)).findAll();
     }
 
     @Test
     void deleteUserById() {
         User userOne = User.builder().id(1).name("Mike").address("New York").ph("543218765").email("mike@test.com").build();
-        Mockito.when(userRepository.findById(ArgumentMatchers.eq(userOne.getId()))).thenReturn(Optional.of(userOne));
+        when(userRepository.findById(eq(userOne.getId()))).thenReturn(Optional.of(userOne));
         // when
         userService.deleteUserById(userOne.getId());
         // then
-        Mockito.verify(userRepository, Mockito.times(1)).deleteById(userOne.getId());
+        verify(userRepository, times(1)).deleteById(userOne.getId());
     }
 
     @Test
@@ -110,12 +112,12 @@ class UserServiceTest {
 
         User userOne = User.builder().id(1).name("Mike").address("New York").ph("543218765").email("mike@test.com").build();
         try {
-            Mockito.when(userRepository.findById(ArgumentMatchers.eq(userOne.getId()))).thenReturn(Optional.empty());
+            when(userRepository.findById(eq(userOne.getId()))).thenReturn(Optional.empty());
             // when
             userService.deleteUserById(userOne.getId());
             // then}
         } catch (UserNotFoundException e) {
-            Mockito.verify(userRepository, Mockito.never()).deleteById(userOne.getId());
+            verify(userRepository, Mockito.never()).deleteById(userOne.getId());
         }
     }
 }
