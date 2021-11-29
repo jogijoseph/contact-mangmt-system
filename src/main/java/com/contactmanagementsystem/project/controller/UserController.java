@@ -3,8 +3,10 @@ package com.contactmanagementsystem.project.controller;
 import com.contactmanagementsystem.project.dto.Response;
 import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
+import com.contactmanagementsystem.project.service.ReadFileService;
 import com.contactmanagementsystem.project.service.UploadService;
 import com.contactmanagementsystem.project.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/cms")
@@ -23,6 +25,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private UploadService uploadService;
+    @Autowired
+    private ReadFileService readFileService;
 
     @PostMapping("/addUser")
     public ResponseEntity<Response> addUser(@Valid @RequestBody User user) {
@@ -73,7 +77,25 @@ public class UserController {
     }
     @SneakyThrows
     @PostMapping("/upload")
-    public List<Map<String, String>> upload(@RequestParam("file") MultipartFile file)  {
-         return uploadService.upload(file);
+    public ResponseEntity<Response> upload(@RequestParam("file") MultipartFile file)  {
+        String json= String.valueOf(uploadService.upload(file));
+        System.out.println(json);
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<User> users= Arrays.asList(objectMapper.readValue( json, User[].class));
+        System.out.println(users);
+        userService.createUsers((List<User>) users);
+        return  new ResponseEntity<>(Response.builder()
+                .message("Users created")
+                .success(true)
+                .build(), HttpStatus.CREATED);
+    }
+    @SneakyThrows
+    @PostMapping("/uploadFile")
+    public ResponseEntity<Response> uploadFile(@ModelAttribute User user)  {
+        readFileService.readDataFromExcel(user.getFile());
+        return  new ResponseEntity<>(Response.builder()
+                .message("Users created")
+                .success(true)
+                .build(), HttpStatus.CREATED);
     }
 }
