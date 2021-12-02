@@ -1,11 +1,11 @@
-package com.contactmanagementsystem.project.service;
+package com.contactmanagementsystem.project.util;
 
 import org.apache.commons.collections4.MapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public final class CountryToPhonePrefix {
+public final class CountryToPhonePrefixUtil {
     public static Map<String, String> COUNTRY_CODE = MapUtils.putAll(new HashMap<String, String>(), new String[][]{
             {"AC", "+247"},
             {"AD", "+376"},

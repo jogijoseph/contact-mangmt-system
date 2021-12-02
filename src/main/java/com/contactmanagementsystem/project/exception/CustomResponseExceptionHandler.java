@@ -35,14 +35,14 @@ public class CustomResponseExceptionHandler extends ResponseEntityExceptionHandl
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({PhoneNoAlreadyPresent.class})
+    @ExceptionHandler({PhoneNoAlreadyPresentException.class})
     public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
         return new ResponseEntity<Object>("Phone Number already present", new HttpHeaders(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<Object> handleOtherException(Exception ex, WebRequest request) {
-        return new ResponseEntity<Object>("Access denied message here", new HttpHeaders(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<Object>(ex.getMessage(),new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 

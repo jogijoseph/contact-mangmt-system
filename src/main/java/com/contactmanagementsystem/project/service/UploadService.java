@@ -1,8 +1,9 @@
 package com.contactmanagementsystem.project.service;
 
-import com.contactmanagementsystem.project.exception.PhoneNoAlreadyPresent;
+import com.contactmanagementsystem.project.exception.PhoneNoAlreadyPresentException;
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
+import com.contactmanagementsystem.project.util.CountryToPhonePrefixUtil;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -39,12 +40,12 @@ public class UploadService {
                     user.setName(sheet.getRow(index).getCell(0).toString());
                     user.setAddress(sheet.getRow(index).getCell(1).toString());
                     user.setCountryCode(sheet.getRow(index).getCell(2).toString());
-                    user.setPh(CountryToPhonePrefix.prefixCode(user.getCountryCode())
+                    user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode())
                             .concat(sheet.getRow(index).getCell(3).toString()));
                     user.setEmail(sheet.getRow(index).getCell(4).toString());
 
                     if (userRepository.existsByPh(user.getPh())) {
-                        throw new PhoneNoAlreadyPresent("Phone Number already present");
+                        throw new PhoneNoAlreadyPresentException("Phone Number already present");
                     } else {
                         userRepository.save(user);
                     }

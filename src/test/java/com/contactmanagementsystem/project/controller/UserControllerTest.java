@@ -2,7 +2,7 @@ package com.contactmanagementsystem.project.controller;
 
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
-import com.contactmanagementsystem.project.service.CountryToPhonePrefix;
+import com.contactmanagementsystem.project.service.CountryToPhonePrefixUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -67,7 +67,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.success", is(true)));
         //ToDo: need to check if data avail in DB
         Optional<User> actual=userRepository.findById(user.getId());
-        user.setPh(CountryToPhonePrefix.prefixCode(user.getCountryCode()).concat(user.getPh()));
+        user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
         Assertions.assertEquals(user,actual.get());
     }
 

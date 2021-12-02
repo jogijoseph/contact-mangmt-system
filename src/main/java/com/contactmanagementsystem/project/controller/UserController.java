@@ -3,7 +3,6 @@ package com.contactmanagementsystem.project.controller;
 import com.contactmanagementsystem.project.dto.Response;
 import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
-import com.contactmanagementsystem.project.service.ReadFileService;
 import com.contactmanagementsystem.project.service.UploadService;
 import com.contactmanagementsystem.project.service.UserService;
 import lombok.SneakyThrows;
@@ -23,8 +22,7 @@ public class UserController {
     private UserService userService;
     @Autowired
     private UploadService uploadService;
-    @Autowired
-    private ReadFileService readFileService;
+
 
     @PostMapping("/addUser")
     public ResponseEntity<Response> addUser(@Valid @RequestBody User user) {
@@ -82,13 +80,5 @@ public class UserController {
                 .success(true)
                 .build(), HttpStatus.CREATED);
     }
-    @SneakyThrows
-    @PostMapping("/uploadFile")
-    public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file)  {
-        readFileService.readDataFromExcel(file);
-        return  new ResponseEntity<>(Response.builder()
-                .message("Users created")
-                .success(true)
-                .build(), HttpStatus.CREATED);
-    }
+
 }
