@@ -3,7 +3,6 @@ package com.contactmanagementsystem.project.controller;
 import com.contactmanagementsystem.project.dto.Response;
 import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
-import com.contactmanagementsystem.project.service.UploadService;
 import com.contactmanagementsystem.project.service.UserService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +19,6 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
-    @Autowired
-    private UploadService uploadService;
 
 
     @PostMapping("/addUser")
@@ -71,10 +68,11 @@ public class UserController {
                             .build(), HttpStatus.BAD_REQUEST);
         }
     }
+
     @SneakyThrows
     @PostMapping("/upload")
-    public ResponseEntity<Response> upload(@RequestParam("file") MultipartFile file)  {
-        uploadService.upload(file);
+    public ResponseEntity<Response> upload(@RequestParam("file") MultipartFile file) {
+        userService.readDataFromExcel(file);
         return new ResponseEntity<>(Response.builder()
                 .message("Users created")
                 .success(true)

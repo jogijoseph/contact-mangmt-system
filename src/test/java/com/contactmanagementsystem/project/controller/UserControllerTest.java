@@ -2,7 +2,7 @@ package com.contactmanagementsystem.project.controller;
 
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
-import com.contactmanagementsystem.project.service.CountryToPhonePrefixUtil;
+import com.contactmanagementsystem.project.util.CountryToPhonePrefixUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

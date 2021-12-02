@@ -5,11 +5,16 @@ import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
 import com.contactmanagementsystem.project.util.CountryToPhonePrefixUtil;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 public class UserService {
@@ -25,20 +30,23 @@ public class UserService {
     Creates a user and insert into DB.
      */
     public User createUser(User user) {
-        String code= CountryToPhonePrefixUtil.prefixCode(user.getCountryCode());
-        System.out.println(code);
-        user.setPh(code.concat(user.getPh()));
-        System.out.println(user.getPh());
-        if(userRepository.existsByPh(user.getPh()))
+        user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
+        if (userRepository.existsByPh(user.getPh()))
             throw new PhoneNoAlreadyPresentException("Phone Number already present");
-            else
-                return userRepository.save(user);
+        else
+            return userRepository.save(user);
     }
 
     /*
     Creates a list of users and insert into DB.
      */
     public List<User> createUsers(List<User> users) {
+        users.stream().forEach(user ->
+        {
+            user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
+            if (userRepository.existsByPh(user.getPh()))
+                throw new PhoneNoAlreadyPresentException("Phone Number already present");
+        });
         return userRepository.saveAll(users);
     }
 
@@ -65,6 +73,32 @@ public class UserService {
             userRepository.deleteById(id);
         else
             throw new UserNotFoundException("id-" + id);
+    }
+
+    /**
+     * @param file
+     * @throws Exception
+     */
+    public void readDataFromExcel(MultipartFile file) throws Exception {
+        Workbook workbook = new HSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+        IntStream.range(0, sheet.getPhysicalNumberOfRows())
+                .skip(1)
+                .forEach(index -> {
+                    User user = new User();
+                    user.setName(sheet.getRow(index).getCell(0).toString());
+                    user.setAddress(sheet.getRow(index).getCell(1).toString());
+                    user.setCountryCode(sheet.getRow(index).getCell(2).toString());
+                    user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode())
+                            .concat(sheet.getRow(index).getCell(3).toString()));
+                    user.setEmail(sheet.getRow(index).getCell(4).toString());
+                    if (userRepository.existsByPh(user.getPh())) {
+                        throw new PhoneNoAlreadyPresentException("Phone Number already present");
+                    } else {
+                        userRepository.save(user);
+                    }
+                });
+
     }
 
 }
