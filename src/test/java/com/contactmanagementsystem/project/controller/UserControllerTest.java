@@ -2,8 +2,10 @@ package com.contactmanagementsystem.project.controller;
 
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
+import com.contactmanagementsystem.project.service.CountryToPhonePrefix;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -28,6 +31,7 @@ class UserControllerTest {
     private WebApplicationContext wac;
     @Autowired
     private UserRepository userRepository;
+
 
     static String asJsonString(final Object obj) {
         try {
@@ -52,7 +56,7 @@ class UserControllerTest {
     @Test
     void addUser() throws Exception {
         // Given
-        User user = User.builder().name("Mike").address("New York").ph("88888990543").email("mike@test.com").build();
+        User user = User.builder().id(1).name("Mike").address("New York").countryCode("IN").ph("88888990543").email("mike@test.com").build();
         // When
         mockMvc.perform(
                         post("/cms/addUser")
@@ -62,6 +66,9 @@ class UserControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success", is(true)));
         //ToDo: need to check if data avail in DB
+        Optional<User> actual=userRepository.findById(user.getId());
+        user.setPh(CountryToPhonePrefix.prefixCode(user.getCountryCode()).concat(user.getPh()));
+        Assertions.assertEquals(user,actual.get());
     }
 
     @Test

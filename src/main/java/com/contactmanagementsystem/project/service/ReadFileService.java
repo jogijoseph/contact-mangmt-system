@@ -20,8 +20,7 @@ import java.util.Iterator;
 public class ReadFileService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private CountryToPhonePrefix countryToPhonePrefix;
+
 
     @SneakyThrows
     public boolean readDataFromExcel(MultipartFile file) {
@@ -50,7 +49,7 @@ public class ReadFileService {
             if (row.getCell(4).getCellType() == CellType.STRING) {
                 user.setEmail(row.getCell(4).getStringCellValue());
             }
-            String code = countryToPhonePrefix.prefixCode(user.getCountryCode());
+            String code = CountryToPhonePrefix.prefixCode(user.getCountryCode());
             user.setPh(code.concat(user.getPh()));
             System.out.println(user.getPh());
             if (userRepository.existsByPh(user.getPh()))

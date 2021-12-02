@@ -1,26 +1,25 @@
 package com.contactmanagementsystem.project.service;
 
-import org.springframework.stereotype.Component;
+import org.apache.commons.collections4.MapUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-@Component
-public class CountryToPhonePrefix {
 
-    private static Map<String, String> map = new HashMap<>();
+public final class CountryToPhonePrefix {
+    public static Map<String, String> COUNTRY_CODE = MapUtils.putAll(new HashMap<String, String>(), new String[][]{
+            {"AC", "+247"},
+            {"AD", "+376"},
+            {"GB", "+44"},
+            {"IN", "+91"},
+            {"US", "+1"}
 
-    public String prefixCode(String code) {
-        String result = map.get(code);
+    });
+
+    public static String prefixCode(String code) {
+        String result = COUNTRY_CODE.get(code);
         if (result == null) {
             throw new IllegalArgumentException("Unknown country code " + code);
         }
         return result;
-    }
-    static {
-        map.put("AC", "+247");
-        map.put("AD", "+376");
-        map.put("GB", "+44");
-        map.put("IN", "+91");
-        map.put("US", "+1");
     }
 }

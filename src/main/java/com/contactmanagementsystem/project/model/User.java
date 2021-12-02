@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.constraints.*;
 
 @Data
@@ -43,6 +45,4 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Transient
-    private MultipartFile file;
 }

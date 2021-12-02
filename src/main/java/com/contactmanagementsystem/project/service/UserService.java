@@ -14,8 +14,7 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private CountryToPhonePrefix countryToPhonePrefix;
+
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -25,7 +24,7 @@ public class UserService {
     Creates a user and insert into DB.
      */
     public User createUser(User user) {
-        String code= countryToPhonePrefix.prefixCode(user.getCountryCode());
+        String code= CountryToPhonePrefix.prefixCode(user.getCountryCode());
         System.out.println(code);
         user.setPh(code.concat(user.getPh()));
         System.out.println(user.getPh());

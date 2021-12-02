@@ -6,7 +6,6 @@ import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.service.ReadFileService;
 import com.contactmanagementsystem.project.service.UploadService;
 import com.contactmanagementsystem.project.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -78,21 +76,16 @@ public class UserController {
     @SneakyThrows
     @PostMapping("/upload")
     public ResponseEntity<Response> upload(@RequestParam("file") MultipartFile file)  {
-        String json= String.valueOf(uploadService.upload(file));
-        System.out.println(json);
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<User> users= Arrays.asList(objectMapper.readValue( json, User[].class));
-        System.out.println(users);
-        userService.createUsers((List<User>) users);
-        return  new ResponseEntity<>(Response.builder()
+        uploadService.upload(file);
+        return new ResponseEntity<>(Response.builder()
                 .message("Users created")
                 .success(true)
                 .build(), HttpStatus.CREATED);
     }
     @SneakyThrows
     @PostMapping("/uploadFile")
-    public ResponseEntity<Response> uploadFile(@ModelAttribute User user)  {
-        readFileService.readDataFromExcel(user.getFile());
+    public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file)  {
+        readFileService.readDataFromExcel(file);
         return  new ResponseEntity<>(Response.builder()
                 .message("Users created")
                 .success(true)
