@@ -1,4 +1,4 @@
-# contact-mangmt-system
+# Contact-Management-System
 
 ## Overview
 The Contact Management System is used to record Users contact details. This application provides following functionalities:
