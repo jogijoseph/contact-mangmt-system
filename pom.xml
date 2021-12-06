@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.contact-management-system</groupId>
-	<artifactId>project</artifactId>
+	<artifactId>cms</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>project</name>
+	<name>cms</name>
 	<description>Contact Management System</description>
 	<properties>
 		<java.version>11</java.version>
