@@ -5,6 +5,7 @@ import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.service.UserService;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@Log4j2
 @RequestMapping(path = "/cms")
 public class UserController {
     @Autowired
@@ -23,6 +25,7 @@ public class UserController {
 
     @PostMapping("/addUser")
     public ResponseEntity<Response> addUser(@Valid @RequestBody User user) {
+        log.info("Creating user");
         userService.createUser(user);
         return new ResponseEntity<>(Response.builder()
                 .message("User created")
@@ -41,10 +44,7 @@ public class UserController {
 
     @GetMapping("/user/{id}")
     public User getUserById(@PathVariable int id) {
-        User user = userService.getUserById(id);
-        if (user == null)
-            throw new UserNotFoundException("id-" + id);
-        return user;
+        return userService.getUserById(id);
     }
 
     @GetMapping("/users")
@@ -61,9 +61,10 @@ public class UserController {
                     .success(true)
                     .build(), HttpStatus.OK);
         } catch (UserNotFoundException e) {
+            log.error("User not found");
             return new ResponseEntity<>(
                     Response.builder()
-                            .message("Bad Request. Invalid user.")
+                            .message("Bad Request. User not found.")
                             .success(false)
                             .build(), HttpStatus.BAD_REQUEST);
         }

@@ -1,10 +1,11 @@
 package com.contactmanagementsystem.project.service;
 
-import com.contactmanagementsystem.project.exception.PhoneNoAlreadyPresentException;
+import com.contactmanagementsystem.project.exception.InvalidPhoneNumberException;
 import com.contactmanagementsystem.project.exception.UserNotFoundException;
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
 import com.contactmanagementsystem.project.util.CountryToPhonePrefixUtil;
+import lombok.extern.log4j.Log4j2;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 @Service
+@Log4j2
 public class UserService {
     @Autowired
     private UserRepository userRepository;
@@ -26,46 +28,59 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    /*
-    Creates a user and insert into DB.
+    /**
+     * Saves the user details
+     * @param user User data
      */
     public User createUser(User user) {
         user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
-        if (userRepository.existsByPh(user.getPh()))
-            throw new PhoneNoAlreadyPresentException("Phone Number already present");
+        userRepository.existsByPh(user.getPh());
+        if (userRepository.existsByPh(user.getPh())) {
+            log.error("Invalid phone number. This phone number already available for a user");
+            throw new InvalidPhoneNumberException("Phone Number already present");
+        }
         else
             return userRepository.save(user);
     }
 
-    /*
-    Creates a list of users and insert into DB.
+    /**
+     * Saves the list of users details
+     * @param users Users data
      */
     public List<User> createUsers(List<User> users) {
         users.stream().forEach(user ->
         {
             user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
-            if (userRepository.existsByPh(user.getPh()))
-                throw new PhoneNoAlreadyPresentException("Phone Number already present");
+            if (userRepository.existsByPh(user.getPh())){
+                log.error("Invalid phone number. This phone number already available for a user");
+                throw new InvalidPhoneNumberException("Phone Number already present");}
         });
         return userRepository.saveAll(users);
     }
 
-    /*
-    Returns a user by id if present.
+    /**
+     * Returns a user by id if present.
+     * @param id Users id
      */
+
     public User getUserById(int id) {
-        return userRepository.findById(id).orElse(null);
+        Optional<User> user =userRepository.findById(id);
+        if (user.isPresent())
+            return user.get();
+        else
+            throw new UserNotFoundException("id-" + id);
     }
 
-    /*
-    Returns all users.
+    /**
+     * Returns all users.
      */
     public List<User> getUsers() {
         return userRepository.findAll();
     }
 
-    /*
-    Delete a user by id if present. If not, throws user not found exception.
+    /**
+     * Delete a user by id if present. If not, throws user not found exception.
+     * @param id Users id
      */
     public void deleteUserById(int id) {
         Optional<User> user = userRepository.findById(id);
@@ -76,8 +91,8 @@ public class UserService {
     }
 
     /**
-     * @param file
-     * @throws Exception
+     * Reads users data from file and save in DB.
+     * @param file User data
      */
     public void readDataFromExcel(MultipartFile file) throws Exception {
         Workbook workbook = new HSSFWorkbook(file.getInputStream());
@@ -93,7 +108,8 @@ public class UserService {
                             .concat(sheet.getRow(index).getCell(3).toString()));
                     user.setEmail(sheet.getRow(index).getCell(4).toString());
                     if (userRepository.existsByPh(user.getPh())) {
-                        throw new PhoneNoAlreadyPresentException("Phone Number already present");
+                        log.error("Invalid phone number. This phone number already available for a user");
+                        throw new InvalidPhoneNumberException("Phone Number already present");
                     } else {
                         userRepository.save(user);
                     }

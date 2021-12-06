@@ -35,9 +35,13 @@ public class CustomResponseExceptionHandler extends ResponseEntityExceptionHandl
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({PhoneNoAlreadyPresentException.class})
-    public ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) {
+    @ExceptionHandler({InvalidPhoneNumberException.class})
+    public ResponseEntity<Object> InvalidPhoneNumber(Exception ex, WebRequest request) {
         return new ResponseEntity<Object>("Phone Number already present", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<Object> UserNotFound(Exception ex, WebRequest request) {
+        return new ResponseEntity<Object>("User not found.", new HttpHeaders(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({Exception.class})
