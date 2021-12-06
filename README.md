@@ -3,7 +3,7 @@
 ## Overview
 The Contact Management System is used to record Users contact details. This application provides following functionalities:
 1. Able to add users with following data
-      ⋅⋅* Name
+*Name
       ⋅⋅* Address
       ⋅⋅* Country Code
       ⋅⋅* Phone Number
