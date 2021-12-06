@@ -51,4 +51,4 @@ java -jar target/cms-0.0.1-SNAPSHOT.jar
 | http://localhost:9090/cms/user/<id>       |       get           | To get the details of a User.               |
 | http://localhost:9090/cms/users           |       get           | To get details of all Users.                |
 | http://localhost:9090/cms/user/delete/<id>|       delete        | To delete a User.                           |
-| http://localhost:9090/cms/upload          |       post          | To add details of Users throug file upload. |
+| http://localhost:9090/cms/upload          |       post          | To add details of Users through file upload. |
