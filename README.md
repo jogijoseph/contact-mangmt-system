@@ -38,7 +38,7 @@ server.port=9090
 ```
 mvn clean package
 ```
-1. Run the below command to start up the Spring Boot application.
+2. Run the below command to start up the Spring Boot application.
 ```
 java -jar target/cms-0.0.1-SNAPSHOT.jar
 ```
