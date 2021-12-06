@@ -26,15 +26,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserServiceImplTest {
 
     @Mock
     UserRepository userRepository;
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @BeforeEach
     void init() {
-        userService = new UserService(userRepository);
+        userServiceImpl = new UserServiceImpl(userRepository);
     }
 
     @Test
@@ -49,7 +49,7 @@ class UserServiceTest {
         Mockito.when(userRepository.save(ArgumentMatchers.eq(expValue))).thenReturn(expValue);
 
         // When
-        User user = userService.createUser(expValue);
+        User user = userServiceImpl.createUser(expValue);
 
         // Then
         assertEquals(user, expValue);
@@ -75,7 +75,7 @@ class UserServiceTest {
         Assertions.assertThrows(
                 InvalidPhoneNumberException.class,
                 () -> {
-                    userService.createUser(user);
+                    userServiceImpl.createUser(user);
                 });
         verify(userRepository, Mockito.never()).save(user);
     }
@@ -93,7 +93,7 @@ class UserServiceTest {
         when(userRepository.saveAll(ArgumentMatchers.eq(expResult))).thenReturn(expResult);
 
         // When
-        userService.createUsers(expResult);
+        userServiceImpl.createUsers(expResult);
 
         // Then
         ArgumentCaptor<List<User>> listUserArgumentCaptor = ArgumentCaptor.forClass(List.class);
@@ -118,7 +118,7 @@ class UserServiceTest {
         Assertions.assertThrows(
                 InvalidPhoneNumberException.class,
                 () -> {
-                    userService.createUsers(expResult);
+                    userServiceImpl.createUsers(expResult);
                 });
         verify(userRepository, Mockito.never()).saveAll(expResult);
     }
@@ -131,11 +131,25 @@ class UserServiceTest {
         when(userRepository.findById(eq(userOne.getId()))).thenReturn(Optional.of(userOne));
 
         // When
-        User user = userService.getUserById(userOne.getId());
+        User user = userServiceImpl.getUserById(userOne.getId());
 
         // Then
         Assertions.assertNotNull(user);
         assertEquals(user, userOne);
+    }
+
+    @Test
+    void testGetUserById_Failure() {
+        // Given
+        User expResult = User.builder().id(1).name("Mike").countryCode("IN").address("New York").ph("543218765").email("mike@test.com").build();
+        when(userRepository.findById(eq(expResult.getId()))).thenReturn(Optional.empty());
+
+        // When Then
+        Assertions.assertThrows(
+                UserNotFoundException.class,
+                () -> {
+                    userServiceImpl.getUserById(expResult.getId());
+                });
     }
 
     @Test
@@ -151,7 +165,7 @@ class UserServiceTest {
         when(userRepository.findAll()).thenReturn(List.of(userOne,userTwo,userThree));
         
         // When
-        List<User> user = userService.getUsers();
+        List<User> user = userServiceImpl.getUsers();
         // Then
         verify(userRepository, times(1)).findAll();
         assertEquals(user, expResult);
@@ -164,7 +178,7 @@ class UserServiceTest {
         when(userRepository.findById(eq(expValue.getId()))).thenReturn(Optional.of(expValue));
 
         // When
-        userService.deleteUserById(expValue.getId());
+        userServiceImpl.deleteUserById(expValue.getId());
 
         // Then
         verify(userRepository, times(1)).deleteById(expValue.getId());
@@ -180,7 +194,7 @@ class UserServiceTest {
         Assertions.assertThrows(
                 UserNotFoundException.class,
                 () -> {
-                    userService.deleteUserById(expResult.getId());
+                    userServiceImpl.deleteUserById(expResult.getId());
                 });
         verify(userRepository, Mockito.never()).deleteById(expResult.getId());
 
@@ -196,7 +210,7 @@ class UserServiceTest {
         MockMultipartFile file = new MockMultipartFile("filename", "file.xls", "application/vnd.ms-excel", inputStream);
 
         // When
-        userService.readDataFromExcel(file);
+        userServiceImpl.readDataFromExcel(file);
 
         // Then
         ArgumentCaptor<User> userArgumentCaptor = ArgumentCaptor.forClass(User.class);
@@ -227,7 +241,7 @@ class UserServiceTest {
         Assertions.assertThrows(
                 InvalidPhoneNumberException.class,
                 () -> {
-                    userService.readDataFromExcel(file);
+                    userServiceImpl.readDataFromExcel(file);
                 });
         verify(userRepository, Mockito.never()).save(user);
     }
