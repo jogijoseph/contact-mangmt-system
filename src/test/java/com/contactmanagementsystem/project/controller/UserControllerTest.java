@@ -2,18 +2,23 @@ package com.contactmanagementsystem.project.controller;
 
 import com.contactmanagementsystem.project.model.User;
 import com.contactmanagementsystem.project.repository.UserRepository;
+import com.contactmanagementsystem.project.util.CountryToPhonePrefixUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -27,6 +32,7 @@ class UserControllerTest {
     private WebApplicationContext wac;
     @Autowired
     private UserRepository userRepository;
+
 
     static String asJsonString(final Object obj) {
         try {
@@ -49,64 +55,79 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser() throws Exception {
+    void testAddUser_Success() throws Exception {
         // Given
-        User user = User.builder().name("Mike").address("New York").ph("88888990543").email("mike@test.com").build();
+        User user = User.builder().id(1).name("Mike").address("New York").countryCode("IN").ph("88888990543").email("mike@test.com").build();
+
         // When
         mockMvc.perform(
                         post("/cms/addUser")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(asJsonString(user)))
+                // Then
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success", is(true)));
+
+        Optional<User> actual = userRepository.findById(user.getId());
+        user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
+        Assertions.assertEquals(user, actual.get());
     }
 
     @Test
-    void addUsers() throws Exception {
+    void testAddUsers_Success() throws Exception {
         // Given
-        User userOne = User.builder().name("Mike").address("New York").ph("543218765").email("mike@test.com").build();
-        User userTwo = User.builder().name("John").address("New York").ph("9876543").email("mike@test.com").build();
-        User userThree = User.builder().name("Adam").address("New York").ph("654345678").email("mike@test.com").build();
-        List<User> users = new ArrayList<>();
-        users.add(userOne);
-        users.add(userTwo);
-        users.add(userThree);
+        User userOne = User.builder().id(1).name("Mike").countryCode("IN").address("New York").ph("543218765").email("mike@test.com").build();
+        User userTwo = User.builder().id(2).name("John").countryCode("IN").address("New York").ph("9876543").email("mike@test.com").build();
+        User userThree = User.builder().id(3).name("Adam").countryCode("IN").address("New York").ph("654345678").email("mike@test.com").build();
+        List<User> expValue = new ArrayList<>();
+        expValue.add(userOne);
+        expValue.add(userTwo);
+        expValue.add(userThree);
+
         // When
         mockMvc.perform(
                         post("/cms/addUsers")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(asJsonString(users)))
+                                .content(asJsonString(expValue)))
                 // Then
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success", is(true)));
+        List<User> users = userRepository.findAll();
+        expValue.stream().forEach(user ->
+        {
+            user.setPh(CountryToPhonePrefixUtil.prefixCode(user.getCountryCode()).concat(user.getPh()));
+        });
+        Assertions.assertEquals(expValue, users);
     }
 
     @Test
-    void getUserById() throws Exception {
+    void testGetUserById_Success() throws Exception {
         // Given
-        User user = User.builder().id(7).name("Mike").address("New York").ph("8888892290543").email("mike@test.com").build();
-        User test = userRepository.save(user);
+        User user = User.builder().id(7).name("Mike").countryCode("IN").address("New York").ph("+9188892290543").email("mike@test.com").build();
+        User expValue = userRepository.save(user);
         // When
         mockMvc.perform(
-                        get("/cms/user/{id}", test.getId())
+                        get("/cms/user/{id}", expValue.getId())
                                 .contentType(MediaType.APPLICATION_JSON))
 
                 // Then
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(test.getId()))
-                .andExpect(jsonPath("$.name").value(test.getName()))
-                .andExpect(jsonPath("$.address").value(test.getAddress()))
-                .andExpect(jsonPath("$.ph").value(test.getPh()))
-                .andExpect(jsonPath("$.email").value(test.getEmail()));
+                .andExpect(jsonPath("$.id").value(expValue.getId()))
+                .andExpect(jsonPath("$.name").value(expValue.getName()))
+                .andExpect(jsonPath("$.address").value(expValue.getAddress()))
+                .andExpect(jsonPath("$.countryCode").value(expValue.getCountryCode()))
+                .andExpect(jsonPath("$.ph").value(expValue.getPh()))
+                .andExpect(jsonPath("$.email").value(expValue.getEmail()));
     }
 
     @Test
-    void getUserById_NotExist() throws Exception {
+    void testGetUserById_Failure() throws Exception {
         // Given
-        User user = User.builder().id(7).name("Mike").address("New York").ph("8888892290543").email("mike@test.com").build();
-        User test = userRepository.save(user);
+        User user = User.builder().id(7).name("Mike").countryCode("IN").address("New York").ph("8888892290543").email("mike@test.com").build();
+        userRepository.save(user);
+
         // When
         mockMvc.perform(
                         get("/cms/user/{id}", 1000)
@@ -114,32 +135,31 @@ class UserControllerTest {
 
                 // Then
                 .andExpect(status().isNotFound());
-
     }
 
     @Test
-    void getAllUsers() throws Exception {
+    void testGetAllUsers() throws Exception {
         // Given
-        User userOne = User.builder().id(5).name("Mike").address("New York").ph("54123218765").email("mike@test.com").build();
-        User user = userRepository.save(userOne);
+        User userOne = User.builder().id(1).name("Mike").countryCode("IN").address("New York").ph("543218765").email("mike@test.com").build();
+        User userTwo = User.builder().id(2).name("John").countryCode("IN").address("New York").ph("9876543").email("mike@test.com").build();
+        List<User> user = new ArrayList<>();
+        user.add(userOne);
+        user.add(userTwo);
+        userRepository.saveAll(user);
+
         // When
         mockMvc.perform(
                         get("/cms/users")
                                 .accept(MediaType.APPLICATION_JSON)
                                 .contentType(MediaType.APPLICATION_JSON))
                 //Then
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.[0].id").value(user.getId()))
-                .andExpect(jsonPath("$.[0].name").value(user.getName()))
-                .andExpect(jsonPath("$.[0].address").value(user.getAddress()))
-                .andExpect(jsonPath("$.[0].ph").value(user.getPh()))
-                .andExpect(jsonPath("$.[0].email").value(user.getEmail()));
+                .andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    void deleteUser() throws Exception {
+    void testDeleteUser_Success() throws Exception {
         // Given
-        User userOne = User.builder().id(5).name("Mike").address("New York").ph("54123218765").email("mike@test.com").build();
+        User userOne = User.builder().id(1).name("Mike").countryCode("IN").address("New York").ph("543218765").email("mike@test.com").build();
         User user = userRepository.save(userOne);
         // When
         mockMvc.perform(
@@ -154,7 +174,7 @@ class UserControllerTest {
     }
 
     @Test
-    void deleteUser_NotExist() throws Exception {
+    void deleteUser_Failure() throws Exception {
         // Given
         int id = 100;
         // When
@@ -166,6 +186,20 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Bad Request. Invalid user.")));
+                .andExpect(jsonPath("$.message", is("Bad Request. User not found.")));
+    }
+
+    @Test
+    void testFileUpload() throws Exception {
+        // Given
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream("file.xls");
+        MockMultipartFile file = new MockMultipartFile("file", "file.xls", "application/vnd.ms-excel", inputStream);
+        // When
+        mockMvc.perform(
+                        multipart("/cms/upload")
+                                .file(file))
+                // Then
+                .andExpect(status().isCreated()).andReturn();
     }
 }
