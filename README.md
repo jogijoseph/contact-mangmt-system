@@ -3,11 +3,11 @@
 ## Overview
 The Contact Management System is used to record Users contact details. This application provides following functionalities:
 1. Able to add users with following data
-⋅⋅*Name
-      ⋅⋅* Address
-      ⋅⋅* Country Code
-      ⋅⋅* Phone Number
-      ⋅⋅* Email
+⋅⋅⋅Name
+⋅⋅⋅Address
+⋅⋅⋅Country Code
+⋅⋅⋅Phone Number
+⋅⋅⋅Email
 2. Delete a specific User.
 3. Able to fetch the details of a specific User.
 4. Able to fetch details of all the Users.   
